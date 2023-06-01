@@ -10,16 +10,19 @@ bot = Bot(token=TELEGRAM_TOKEN)
 
 app = flask.Flask(__name__)
 
-@app.route("/webhook", methods=["POST"])
+@app.route('/webhook', methods=['POST'])
 def gitlab_webhook():
-    data = request.get_json()
-
-    if data['object_kind'] == 'merge_request':
-        attributes = data['object_attributes']
-        if attributes['target_branch'] == 'dev' and attributes['state'] == 'merged':
-            bot.send_message(chat_id=CHAT_ID, text="Se ha realizado un merge a dev")
-    
-    return "OK"
+    if request.method == 'POST':
+        json = request.get_json()
+        ref = json['ref']
+        if 'master' in ref or 'dev' in ref:
+            commits = json['commits']
+            for commit in commits:
+                message = f"Nuevo commit en {ref}: {commit['message']} por {commit['author']['name']}"
+                bot.send_message(chat_id=os.getenv('TELEGRAM_CHAT_ID'), text=message)
+        return 'OK', 200
+    else:
+        return 'OK', 200
 
 @app.route("/webhook-echo", methods=["POST"])
 def gitlab_webhook_echo():    
