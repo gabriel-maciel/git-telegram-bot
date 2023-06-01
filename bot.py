@@ -21,8 +21,8 @@ def gitlab_webhook():
     
     return "OK"
 
-@app.route("/webhook2", methods=["POST"])
-def gitlab_webhook():    
+@app.route("/webhook-echo", methods=["POST"])
+def gitlab_webhook_echo():    
     return "OK"
 
 if __name__ == "__main__":
