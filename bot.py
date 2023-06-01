@@ -22,4 +22,6 @@ def gitlab_webhook():
     return "OK"
 
 if __name__ == "__main__":
-    app.run(port=5000)
+    port = int(os.getenv("PORT", 5000))  # Usa el puerto de la variable de entorno PORT, o 5000 si no está definida
+    app.run(port=port)
+
