@@ -1,18 +1,10 @@
-# Usa una imagen base de Python 3
-FROM python:3.9-slim
+FROM python:3.9
 
-# Crea un directorio para el bot
-WORKDIR /bot
+WORKDIR /app
 
-# Copia los requisitos e instala las dependencias
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt requirements.txt
+RUN pip3 install -r requirements.txt
 
-# Copia el script del bot
-COPY bot.py .
+COPY . .
 
-# Expone el puerto en el que el bot está escuchando (5000 en tu caso)
-EXPOSE 5000
-
-# Ejecuta el bot
-CMD ["python", "./bot.py"]
+CMD ["uvicorn", "nombre_de_tu_archivo:app", "--host", "0.0.0.0", "--port", "$PORT"]

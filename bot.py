@@ -1,38 +1,29 @@
 import os
-import flask
-from flask import request
+from fastapi import FastAPI
 from telegram import Bot
+from starlette.requests import Request
 
-# Obtiene los tokens desde las variables de entorno
+app = FastAPI()
+
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-CHAT_ID = os.getenv("CHAT_ID")
 bot = Bot(token=TELEGRAM_TOKEN)
 
-app = flask.Flask(__name__)
-
-@app.route('/webhook', methods=['POST'])
-def gitlab_webhook():
+@app.post('/webhook')
+async def gitlab_webhook(request: Request):
     print("hello?")
-    app.logger.info("Webhook received")
-    bot.send_message(chat_id=os.getenv('TELEGRAM_CHAT_ID'), text='Test webhook')
-    if request.method == 'POST':
-        json = request.get_json()
-        ref = json['ref']
-        if 'master' in ref or 'dev' in ref:
-            commits = json['commits']
-            for commit in commits:
-                message = f"Nuevo commit en {ref}: {commit['message']} por {commit['author']['name']}"
-                app.logger.info(message)
-                bot.send_message(chat_id=os.getenv('TELEGRAM_CHAT_ID'), text=message)
-        return 'OK', 200
-    else:
-        return 'OK', 200
+    await bot.send_message(chat_id=os.getenv('TELEGRAM_CHAT_ID'), text='Webhook received')
 
-@app.route("/webhook-echo", methods=["POST"])
-def gitlab_webhook_echo():    
-    return "OK"
+    json = await request.json()
+    ref = json['ref']
+    if 'master' in ref or 'dev' in ref:
+        commits = json['commits']
+        for commit in commits:
+            message = f"Nuevo commit en {ref}: {commit['message']} por {commit['author']['name']}"
+            print(message)
+            await bot.send_message(chat_id=os.getenv('TELEGRAM_CHAT_ID'), text=message)
 
-if __name__ == "__main__":
-    port = int(os.getenv('PORT', 7876))
-    app.run(host='0.0.0.0', port=port)
+    return {"message": "OK"}
 
+@app.post("/webhook-echo")
+async def gitlab_webhook_echo():    
+    return {"message": "OK"}

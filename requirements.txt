@@ -1,2 +1,4 @@
-flask
+fastapi
+uvicorn
 python-telegram-bot
+python-dotenv
