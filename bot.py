@@ -12,6 +12,8 @@ app = flask.Flask(__name__)
 
 @app.route('/webhook', methods=['POST'])
 def gitlab_webhook():
+    print("hello?")
+    bot.send_message(chat_id=os.getenv('TELEGRAM_CHAT_ID'), text='Test webhook')
     if request.method == 'POST':
         json = request.get_json()
         ref = json['ref']
@@ -19,6 +21,7 @@ def gitlab_webhook():
             commits = json['commits']
             for commit in commits:
                 message = f"Nuevo commit en {ref}: {commit['message']} por {commit['author']['name']}"
+                print(message)
                 bot.send_message(chat_id=os.getenv('TELEGRAM_CHAT_ID'), text=message)
         return 'OK', 200
     else:
