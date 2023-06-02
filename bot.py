@@ -32,20 +32,21 @@ class WebhookMR(BaseModel):
 app = FastAPI()
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 bot = Bot(token=TELEGRAM_TOKEN)
 
 @app.post("/webhook/commit")
 async def gitlab_webhook_commit(webhook: WebhookCommit):
     for commit in webhook.commits:
         message = f"Nuevo commit en {webhook.ref}: '{commit.message}' por {commit.author.name}. URL: {commit.url}"
-        await bot.send_message(chat_id=CHAT_ID, text=message)
+        await bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
     return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "OK"})
 
 @app.post("/webhook/mr")
 async def gitlab_webhook_mr(webhook: WebhookMR):
     if webhook.object_attributes.target_branch == 'dev':
         message = f"Nuevo Merge Request: '{webhook.object_attributes.source_branch}' a 'dev'. URL: {webhook.object_attributes.url}"
-        await bot.send_message(chat_id=CHAT_ID, text=message)
+        await bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
     return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "OK"})
 
 @app.post("/webhook-echo")
