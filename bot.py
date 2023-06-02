@@ -38,7 +38,8 @@ bot = Bot(token=TELEGRAM_TOKEN)
 @app.post("/webhook/commit")
 async def gitlab_webhook_commit(webhook: WebhookCommit):
     for commit in webhook.commits:
-        message = f"Nuevo commit en {webhook.ref}: ['{commit.message}']({commit.url}) por {commit.author.name}"
+        message = f"Nuevo commit en {webhook.ref}: [{commit.message}]({commit.url}) por {commit.author.name}"
+        print(message)
         await bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message, parse_mode='Markdown')
     return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "OK"})
 
