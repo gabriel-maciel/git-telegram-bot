@@ -35,13 +35,16 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 bot = Bot(token=TELEGRAM_TOKEN)
 
-@app.post("/webhook/commit")
-async def gitlab_webhook_commit(webhook: WebhookCommit):
-    for commit in webhook.commits:
-        message = f"Nuevo commit en {webhook.ref}: [{commit.message}]({commit.url}) por {commit.author.name}"
-        print(message)
+@app.post("/webhook/commits")
+async def gitlab_commits_webhook(commit: Commit):
+    ref = commit.ref
+    ref_escaped = ref.replace("_", "\\_")
+    for commit_info in commit.commits:
+        url = commit_info.url
+        message_escaped = commit_info.message.replace("_", "\\_")
+        message = f"[Nuevo commit en {ref_escaped}: '{message_escaped}' por {commit_info.author.name}]({url})"
         await bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message, parse_mode='Markdown')
-    return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "OK"})
+    return {"message": "OK"}
 
 @app.post("/webhook/mr")
 async def gitlab_webhook_mr(webhook: WebhookMR):
@@ -50,6 +53,6 @@ async def gitlab_webhook_mr(webhook: WebhookMR):
         await bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
     return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "OK"})
 
-@app.post("/webhook-echo")
-async def gitlab_webhook_echo():    
+@app.post("/webhook/echo")
+async def gitlab_webhook_echo():
     return {"message": "OK"}
