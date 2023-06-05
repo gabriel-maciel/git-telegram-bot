@@ -36,7 +36,7 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 bot = Bot(token=TELEGRAM_TOKEN)
 
 @app.post("/webhook/commit")
-async def gitlab_commits_webhook(commit: Commit):
+async def gitlab_commits_webhook(commit: WebhookCommit):
     ref = commit.ref
     ref_escaped = ref.replace("_", "\\\\_")
     for commit_info in commit.commits:
