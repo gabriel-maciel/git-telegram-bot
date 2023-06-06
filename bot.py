@@ -38,10 +38,10 @@ bot = Bot(token=TELEGRAM_TOKEN)
 @app.post("/webhook/commit")
 async def gitlab_commits_webhook(commit: WebhookCommit):
     ref = commit.ref
-    ref_escaped = ref.replace("_", "\\\\_")
+    ref_escaped = ref.replace("_", "\\_")
     for commit_info in commit.commits:
         url = commit_info.url
-        message_escaped = commit_info.message.replace("_", "\\\\_")
+        message_escaped = commit_info.message.replace("_", "\\_")
         message = f"[Nuevo commit en {ref_escaped}: '{message_escaped}' por {commit_info.author.name}]({url})"
         await bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message, parse_mode='Markdown')
     return {"message": "OK"}
