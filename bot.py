@@ -4,6 +4,8 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from aiogram import Bot, types
+import asyncio
+from aiogram.utils.exceptions import RetryAfter
 
 class Author(BaseModel):
     name: str
@@ -35,6 +37,17 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 bot = Bot(token=TELEGRAM_TOKEN)
 
+async def send_message_with_retry(bot, chat_id, text, parse_mode='Markdown', max_retries=5):
+    for retry in range(max_retries):
+        try:
+            await bot.send_message(chat_id=chat_id, text=text, parse_mode=parse_mode)
+            break
+        except RetryAfter as e:
+            if retry == max_retries - 1:
+                raise
+            else:
+                await asyncio.sleep(e.timeout)
+
 @app.post("/webhook/commit")
 async def gitlab_commits_webhook(commit: WebhookCommit):
     ref = commit.ref
@@ -43,7 +56,7 @@ async def gitlab_commits_webhook(commit: WebhookCommit):
         url = commit_info.url
         message_escaped = commit_info.message.replace("_", "\\_")
         message = f"Nuevo commit en {ref_escaped}: ['{message_escaped}']({url}) por {commit_info.author.name}"
-        await bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message, parse_mode='Markdown')
+        await send_message_with_retry(bot, TELEGRAM_CHAT_ID, message)
     return {"message": "OK"}
 
 @app.post("/webhook/mr")
